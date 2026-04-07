@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card page-card">
+    <h2><i class="fa-solid fa-utensils"></i> Order In-Flight Food</h2>
+    <p>Enhance your journey with our premium meals. For Booking ID: <strong>{{ booking_id }}</strong></p>
+
+    <form action="{{ url_for('order_food', booking_id=booking_id) }}" method="POST" class="standard-form" id="foodForm" novalidate>
+        <div class="form-group">
+            <label for="food_item">Select Meal Option</label>
+            <select name="food_item" id="food_item">
+                <option value="">-- Choose a Meal --</option>
+                <option value="Vegetarian Meal">Vegetarian Meal - {{ currency_symbol }}{{ "%.2f"|format(12.0 *
+                    currency_rate) }}</option>
+                <option value="Chicken Sandwich">Chicken Sandwich - {{ currency_symbol }}{{ "%.2f"|format(10.0 *
+                    currency_rate) }}</option>
+                <option value="Pasta">Pasta - {{ currency_symbol }}{{ "%.2f"|format(15.0 * currency_rate) }}</option>
+                <option value="Steak">Premium Steak - {{ currency_symbol }}{{ "%.2f"|format(25.0 * currency_rate) }}
+                </option>
+                <option value="Fruit Platter">Fruit Platter - {{ currency_symbol }}{{ "%.2f"|format(8.0 * currency_rate)
+                    }}</option>
+                <option value="Wine">Wine - {{ currency_symbol }}{{ "%.2f"|format(10.0 * currency_rate) }}</option>
+            </select>
+            <span class="field-error" id="err-food"></span>
+        </div>
+
+        <!-- Hidden price field populated roughly for demo -->
+        <input type="hidden" name="price" id="price" value="15.00">
+
+        <div class="form-group">
+            <label for="quantity">Quantity</label>
+            <input type="number" name="quantity" id="quantity" min="1" max="5" value="1">
+            <span class="field-error" id="err-qty"></span>
+        </div>
+
+        <div class="form-actions mt-3">
+            <button type="submit" class="btn btn-primary" onclick="setPrice()">Add to Booking</button>
+            <a href="{{ url_for('booking_summary', booking_id=booking_id) }}" class="btn btn-secondary">Skip Food
+                Order</a>
+        </div>
+    </form>
+</div>
+
+<style>
+    .field-error { color: #e53e3e; font-size: 0.82rem; display: block; margin-top: 3px; }
+</style>
+
+<script>
+    function setPrice() {
+        const item = document.getElementById('food_item').value;
+        const prices = {
+            "Vegetarian Meal": 12.00,
+            "Chicken Sandwich": 10.00,
+            "Pasta": 15.00,
+            "Steak": 25.00,
+            "Fruit Platter": 8.00,
+            "Wine": 10.00
+        };
+        document.getElementById('price').value = prices[item] || 0.00;
+    }
+
+    document.getElementById('foodForm').addEventListener('submit', function (e) {
+        let valid = true;
+
+        function showError(id, msg) { document.getElementById(id).textContent = msg; valid = false; }
+        function clearError(id) { document.getElementById(id).textContent = ''; }
+
+        const food = document.getElementById('food_item').value;
+        const qty = parseInt(document.getElementById('quantity').value, 10);
+
+        // Food is optional — only validate qty if a food item IS selected
+        clearError('err-food');
+        if (food) {
+            // A meal was chosen: quantity must be > 0
+            if (isNaN(qty) || qty < 1) {
+                showError('err-qty', 'Quantity must be at least 1.');
+            } else {
+                clearError('err-qty');
+            }
+        } else {
+            // No meal selected — clear any leftover qty error and allow submit
+            clearError('err-qty');
+        }
+
+        if (!valid) e.preventDefault();
+    });
+</script>
+{% endblock %}

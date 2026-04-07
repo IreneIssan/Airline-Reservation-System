@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card page-card">
+    <h2><i class="fa-solid fa-credit-card"></i> Make Payment</h2>
+
+    {% if booking %}
+    <div class="summary-box alert alert-info">
+        <h3>Payment Details for Booking #{{ booking.BookingID }}</h3>
+        <p>Total Amount Due: <strong>${{ "%.2f"|format(booking.TotalAmount) }}</strong></p>
+        <p>Current Status: <span class="badge badge-warning">{{ booking.Status }}</span></p>
+    </div>
+
+    <form action="{{ url_for('payment', booking_id=booking.BookingID) }}" method="POST" class="standard-form mt-3" id="paymentForm" novalidate>
+        <input type="hidden" name="amount_paid" value="{{ booking.TotalAmount }}">
+
+        <div class="form-group">
+            <label for="payment_mode">Select Payment Method</label>
+            <select name="payment_mode" id="payment_mode" required>
+                <option value="Credit Card">Credit Card</option>
+                <option value="Debit Card">Debit Card</option>
+                <option value="UPI">UPI</option>
+                <option value="Net Banking">Net Banking</option>
+            </select>
+        </div>
+
+        <div class="payment-mockup">
+            <!-- Card / UPI section (hidden when Net Banking is selected) -->
+            <div id="card-upi-section" class="form-group">
+                <label>Card / UPI Details (Mockup)</label>
+                <input type="text" id="payment_detail" name="payment_detail" placeholder="XXXX-XXXX-XXXX-XXXX or UPI ID">
+                <span class="field-error" id="err-payment"></span>
+            </div>
+
+            <!-- Net Banking section (shown only when Net Banking is selected) -->
+            <div id="netbanking-section" style="display:none;">
+                <div class="form-group">
+                    <label for="bank_name">Bank Name</label>
+                    <input type="text" id="bank_name" name="bank_name" placeholder="e.g. State Bank of India">
+                    <span class="field-error" id="err-bank-name"></span>
+                </div>
+                <div class="form-group">
+                    <label for="account_number">Account Number</label>
+                    <input type="text" id="account_number" name="account_number" placeholder="9 to 18 digit account number">
+                    <span class="field-error" id="err-account"></span>
+                </div>
+                <div class="form-group">
+                    <label for="ifsc_code">IFSC Code</label>
+                    <input type="text" id="ifsc_code" name="ifsc_code" placeholder="e.g. SBIN0123456" style="text-transform:uppercase;">
+                    <span class="field-error" id="err-ifsc"></span>
+                </div>
+            </div>
+
+            <p class="help-text text-muted"><i class="fa-solid fa-lock"></i> Secure Gateway Simulation</p>
+        </div>
+
+        <div class="form-actions mt-3">
+            <button type="submit" class="btn btn-primary btn-large">Pay {{ currency_symbol }}{{
+                "%.2f"|format((booking.TotalAmount|float) * currency_rate)
+                }}</button>
+            <a href="{{ url_for('booking_summary', booking_id=booking.BookingID) }}"
+                class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+    {% else %}
+    <p>Booking details not found.</p>
+    {% endif %}
+</div>
+
+<style>
+    .field-error { color: #e53e3e; font-size: 0.82rem; display: block; margin-top: 3px; }
+</style>
+
+<script>
+    const modeSelect = document.getElementById('payment_mode');
+    const detailInput = document.getElementById('payment_detail');
+    const cardUpiSection = document.getElementById('card-upi-section');
+    const netBankingSection = document.getElementById('netbanking-section');
+
+    function toggleSections() {
+        const mode = modeSelect ? modeSelect.value : '';
+        if (mode === 'Net Banking') {
+            cardUpiSection.style.display = 'none';
+            netBankingSection.style.display = 'block';
+            detailInput.value = '';
+            document.getElementById('err-payment').textContent = '';
+        } else {
+            cardUpiSection.style.display = 'block';
+            netBankingSection.style.display = 'none';
+            // Clear net banking fields and errors
+            ['bank_name','account_number','ifsc_code'].forEach(function(id) {
+                document.getElementById(id).value = '';
+            });
+            ['err-bank-name','err-account','err-ifsc'].forEach(function(id) {
+                document.getElementById(id).textContent = '';
+            });
+            // Update placeholder for card/UPI
+            if (mode === 'UPI') {
+                detailInput.placeholder = 'yourname@upi';
+            } else {
+                detailInput.placeholder = 'XXXX-XXXX-XXXX-XXXX';
+            }
+        }
+    }
+
+    if (modeSelect) {
+        modeSelect.addEventListener('change', toggleSections);
+        toggleSections();
+    }
+
+    const paymentForm = document.getElementById('paymentForm');
+    if (paymentForm) {
+        paymentForm.addEventListener('submit', function (e) {
+            let valid = true;
+            const mode = modeSelect.value;
+
+            function showErr(id, msg) { document.getElementById(id).textContent = msg; valid = false; }
+            function clearErr(id) { document.getElementById(id).textContent = ''; }
+
+            if (mode === 'Credit Card' || mode === 'Debit Card') {
+                const detail = detailInput.value.trim();
+                if (!detail) {
+                    showErr('err-payment', 'Card number cannot be empty.');
+                } else {
+                    const digits = detail.replace(/[\s\-]/g, '');
+                    if (!/^\d{16}$/.test(digits)) {
+                        showErr('err-payment', 'Card number must be exactly 16 digits.');
+                    } else {
+                        clearErr('err-payment');
+                    }
+                }
+
+            } else if (mode === 'UPI') {
+                const detail = detailInput.value.trim();
+                if (!detail) {
+                    showErr('err-payment', 'UPI ID cannot be empty.');
+                } else if (!detail.includes('@')) {
+                    showErr('err-payment', 'UPI ID must contain "@" (e.g. name@upi).');
+                } else {
+                    clearErr('err-payment');
+                }
+
+            } else if (mode === 'Net Banking') {
+                // Bank Name: only alphabets and spaces
+                const bankName = document.getElementById('bank_name').value.trim();
+                if (!bankName) {
+                    showErr('err-bank-name', 'Bank name is required.');
+                } else if (!/^[A-Za-z\s]+$/.test(bankName)) {
+                    showErr('err-bank-name', 'Bank name must contain only alphabets and spaces.');
+                } else {
+                    clearErr('err-bank-name');
+                }
+
+                // Account Number: 9–18 digits only
+                const accNo = document.getElementById('account_number').value.trim();
+                if (!accNo) {
+                    showErr('err-account', 'Account number is required.');
+                } else if (!/^\d{9,18}$/.test(accNo)) {
+                    showErr('err-account', 'Account number must be numeric and between 9 to 18 digits.');
+                } else {
+                    clearErr('err-account');
+                }
+
+                // IFSC: 4 letters + '0' + 6 digits (e.g. SBIN0123456)
+                const ifsc = document.getElementById('ifsc_code').value.trim().toUpperCase();
+                document.getElementById('ifsc_code').value = ifsc;
+                if (!ifsc) {
+                    showErr('err-ifsc', 'IFSC code is required.');
+                } else if (!/^[A-Z]{4}0\d{6}$/.test(ifsc)) {
+                    showErr('err-ifsc', 'IFSC must be 4 letters + 0 + 6 digits (e.g. SBIN0123456).');
+                } else {
+                    clearErr('err-ifsc');
+                }
+            }
+
+            if (!valid) e.preventDefault();
+        });
+    }
+</script>
+{% endblock %}

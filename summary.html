@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card page-card">
+    <h2><i class="fa-solid fa-receipt"></i> Booking Summary</h2>
+
+    {% if summary %}
+    <div class="summary-container">
+        <div class="summary-header">
+            <h3>Booking ID: #{{ summary.BookingID }}</h3>
+            <span class="badge {{ 'badge-success' if summary.BookingStatus == 'Confirmed' else 'badge-warning' }}">
+                {{ summary.BookingStatus }}
+            </span>
+        </div>
+
+        <div class="summary-body">
+            <p><strong>Passenger:</strong> {{ summary.PassengerName }}</p>
+            <p><strong>Flight:</strong> {{ summary.FlightNumber }}</p>
+            <p><strong>Class:</strong> {{ summary.ClassType }}</p>
+            <p><strong>Booking Date:</strong> {{ summary.BookingDate.strftime('%Y-%m-%d %H:%M') }}</p>
+            <p class="summary-total"><strong>Total Amount:</strong> {{ currency_symbol }}{{
+                "%.2f"|format((summary.TotalAmount|float) * (currency_rate|float)) }}</p>
+        </div>
+
+        {% if orders %}
+        <div class="food-summary mt-3">
+            <h4><i class="fa-solid fa-bowl-food"></i> Food Orders</h4>
+            <ul class="food-list">
+                {% for order in orders %}
+                <li>{{ order.Quantity }}x {{ order.FoodItem }} ({{ currency_symbol }}{{
+                    "%.2f"|format((order.Price|float) * (currency_rate|float))
+                    }}each)</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="form-actions mt-3">
+        {% if summary.BookingStatus == 'Pending' %}
+        <a href="{{ url_for('payment', booking_id=summary.BookingID) }}" class="btn btn-primary btn-large">Process
+            Payment</a>
+        {% endif %}
+        <a href="{{ url_for('order_food', booking_id=summary.BookingID) }}" class="btn btn-secondary">Order Extra
+            Food</a>
+
+        <form action="{{ url_for('cancel_booking', booking_id=summary.BookingID) }}" method="POST"
+            style="display:inline;" onsubmit="return confirm('Are you sure you want to cancel this booking?');">
+            <button type="submit" class="btn btn-danger">Cancel Booking</button>
+        </form>
+    </div>
+    {% else %}
+    <p>Booking details not found.</p>
+    {% endif %}
+</div>
+{% endblock %}

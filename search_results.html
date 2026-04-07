@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card page-card">
+    <h2><i class="fa-solid fa-plane"></i> Search Results</h2>
+
+    {% if flights %}
+    <p>We found <strong>{{ flights|length }}</strong> flight(s) matching your criteria!</p>
+
+    <div class="flight-results">
+        {% for flight in flights %}
+        <div class="flight-card">
+            <div class="flight-info-left">
+                <h3>Flight {{ flight.FlightNumber }}</h3>
+                <p class="route"><strong>{{ flight.Source }}</strong> <i class="fa-solid fa-arrow-right"></i> <strong>{{
+                        flight.Destination }}</strong></p>
+            </div>
+            <div class="flight-info-middle">
+                <div class="time-block">
+                    <span class="label">Departure</span>
+                    <span class="time">{{ flight.DepartureTime.strftime('%Y-%m-%d %H:%M') }}</span>
+                </div>
+                <div class="time-block">
+                    <span class="label">Arrival</span>
+                    <span class="time">{{ flight.ArrivalTime.strftime('%Y-%m-%d %H:%M') }}</span>
+                </div>
+            </div>
+            <div class="flight-info-right">
+                <span class="price">Base: {{ flight.currency_symbol }}{{ "%.2f"|format(flight.converted_fare) }}</span>
+                <a href="{{ url_for('book_flight', flight_id=flight.FlightID) }}" class="btn btn-primary">Book Now</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="fa-solid fa-plane-slash empty-icon"></i>
+        <h3>No flights found</h3>
+        <p>No flights available for selected route and date.</p>
+        <a href="{{ url_for('index') }}" class="btn btn-secondary mt-2">Try Another Search</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

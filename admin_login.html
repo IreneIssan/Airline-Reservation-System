@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Login – Airline Management</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
+    <style>
+        /* ── Page background ── */
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #0a0e1a 0%, #0d1b3e 50%, #0f2258 100%);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        /* ── Card ── */
+        .login-card {
+            width: 100%;
+            max-width: 420px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 18px;
+            padding: 2.5rem 2.25rem;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+            color: #e8edf5;
+        }
+
+        /* ── Logo / brand ── */
+        .brand-icon {
+            width: 62px;
+            height: 62px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1a73e8, #0052cc);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            margin: 0 auto 1rem;
+            box-shadow: 0 4px 18px rgba(26, 115, 232, .45);
+        }
+
+        .login-card h1 {
+            font-size: 1.45rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: .25rem;
+            color: #ffffff;
+        }
+
+        .login-card .subtitle {
+            text-align: center;
+            font-size: .85rem;
+            color: #94a3b8;
+            margin-bottom: 1.75rem;
+        }
+
+        /* ── Form controls ── */
+        .form-label {
+            font-size: .83rem;
+            font-weight: 600;
+            color: #94a3b8;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+        }
+
+        .form-control {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #e8edf5;
+            border-radius: 10px;
+            padding: .65rem 1rem;
+            transition: border-color .2s, box-shadow .2s;
+        }
+
+        .form-control:focus {
+            background: rgba(255, 255, 255, 0.09);
+            border-color: #1a73e8;
+            box-shadow: 0 0 0 3px rgba(26, 115, 232, .22);
+            color: #ffffff;
+            outline: none;
+        }
+
+        .form-control::placeholder {
+            color: #4e6080;
+        }
+
+        /* ── Input group icon ── */
+        .input-group-text {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-right: none;
+            color: #94a3b8;
+            border-radius: 10px 0 0 10px;
+        }
+
+        .input-group .form-control {
+            border-left: none;
+            border-radius: 0 10px 10px 0;
+        }
+
+        /* ── Submit button ── */
+        .btn-login {
+            width: 100%;
+            padding: .7rem;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 1rem;
+            letter-spacing: .03em;
+            background: linear-gradient(90deg, #1a73e8, #0052cc);
+            border: none;
+            color: #fff;
+            transition: opacity .2s, transform .15s;
+            margin-top: .5rem;
+        }
+
+        .btn-login:hover {
+            opacity: .88;
+            transform: translateY(-1px);
+        }
+
+        /* ── Alerts ── */
+        .alert {
+            border-radius: 10px;
+            font-size: .88rem;
+        }
+
+        /* ── Back link ── */
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 1.2rem;
+            font-size: .83rem;
+            color: #64748b;
+            text-decoration: none;
+        }
+
+        .back-link:hover {
+            color: #94a3b8;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="login-card">
+
+        <!-- Brand -->
+        <div class="brand-icon">
+            <i class="bi bi-airplane-fill text-white"></i>
+        </div>
+        <h1>Admin Portal</h1>
+        <p class="subtitle">Airline Reservation Management System</p>
+
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <!-- Login form -->
+        <form method="POST" action="{{ url_for('admin_login') }}" novalidate>
+            <!-- Username -->
+            <div class="mb-3">
+                <label for="username" class="form-label">Username</label>
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="bi bi-person-fill"></i>
+                    </span>
+                    <input type="text" id="username" name="username" class="form-control" placeholder="admin" required
+                        autofocus />
+                </div>
+            </div>
+
+            <!-- Password -->
+            <div class="mb-4">
+                <label for="password" class="form-label">Password</label>
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="bi bi-lock-fill"></i>
+                    </span>
+                    <input type="password" id="password" name="password" class="form-control" placeholder="••••••••"
+                        required />
+                </div>
+            </div>
+
+            <button type="submit" class="btn-login">
+                <i class="bi bi-box-arrow-in-right me-1"></i> Sign In
+            </button>
+        </form>
+
+        <a href="{{ url_for('index') }}" class="back-link">
+            <i class="bi bi-arrow-left me-1"></i>Back to Home
+        </a>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

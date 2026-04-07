@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="hero-content fade-in">
+        <h1>Find Your Next Adventure</h1>
+        <p>Book flights to destinations around the world with SkyHigh Airlines.</p>
+    </div>
+</div>
+
+<div class="search-card card glass-card">
+    <h2><i class="fa-solid fa-magnifying-glass"></i> Search Flights</h2>
+    <form action="{{ url_for('search_flights') }}" method="POST" class="search-form" id="searchForm" novalidate>
+        <div class="form-group">
+            <label for="source_id"><i class="fa-solid fa-plane-departure"></i> From</label>
+            <select name="source_id" id="source_id" required>
+                <option value="">Select Origin Airport</option>
+                {% for airport in airports %}
+                <option value="{{ airport.AirportID }}">{{ airport.City }} - {{ airport.AirportName }}</option>
+                {% endfor %}
+            </select>
+            <span class="field-error" id="err-source"></span>
+        </div>
+
+        <div class="form-group">
+            <label for="destination_id"><i class="fa-solid fa-plane-arrival"></i> To</label>
+            <select name="destination_id" id="destination_id" required>
+                <option value="">Select Destination Airport</option>
+                {% for airport in airports %}
+                <option value="{{ airport.AirportID }}">{{ airport.City }} - {{ airport.AirportName }}</option>
+                {% endfor %}
+            </select>
+            <span class="field-error" id="err-dest"></span>
+        </div>
+
+        <div class="form-group">
+            <label for="date"><i class="fa-solid fa-calendar-days"></i> Travel Date (From)</label>
+            <input type="date" name="date" id="date" required>
+            <span class="field-error" id="err-date"></span>
+        </div>
+
+        <div class="form-group form-actions">
+            <button type="submit" class="btn btn-primary btn-large">Search Flights</button>
+        </div>
+    </form>
+</div>
+
+<style>
+    .field-error { color: #e53e3e; font-size: 0.82rem; display: block; margin-top: 3px; }
+</style>
+
+<script>
+    document.getElementById('searchForm').addEventListener('submit', function (e) {
+        let valid = true;
+
+        function showError(id, msg) { document.getElementById(id).textContent = msg; valid = false; }
+        function clearError(id) { document.getElementById(id).textContent = ''; }
+
+        const src = document.getElementById('source_id').value;
+        const dst = document.getElementById('destination_id').value;
+        const dateVal = document.getElementById('date').value;
+
+        // From / To same check
+        if (!src) {
+            showError('err-source', 'Please select an origin airport.');
+        } else {
+            clearError('err-source');
+        }
+
+        if (!dst) {
+            showError('err-dest', 'Please select a destination airport.');
+        } else if (src && dst && src === dst) {
+            showError('err-dest', 'Origin and destination cannot be the same.');
+        } else {
+            clearError('err-dest');
+        }
+
+        // Date must be today or future
+        if (!dateVal) {
+            showError('err-date', 'Please select a travel date.');
+        } else {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const selected = new Date(dateVal);
+            if (selected < today) {
+                showError('err-date', 'Travel date cannot be in the past.');
+            } else {
+                clearError('err-date');
+            }
+        }
+
+        if (!valid) e.preventDefault();
+    });
+</script>
+{% endblock %}
+
+
+

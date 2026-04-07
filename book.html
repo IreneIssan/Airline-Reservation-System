@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card page-card">
+    <h2><i class="fa-solid fa-ticket"></i> Book Your Flight</h2>
+
+    {% if flight %}
+    <div class="booking-flight-summary">
+        <h3>Flight {{ flight.FlightNumber }}</h3>
+        <p>Departs: <strong>{{ flight.DepartureTime.strftime('%Y-%m-%d %H:%M') }}</strong></p>
+        <p>Arrives: <strong>{{ flight.ArrivalTime.strftime('%Y-%m-%d %H:%M') }}</strong></p>
+        <p>Base Fare: <strong>${{ "%.2f"|format(flight.BaseFare) }}</strong></p>
+    </div>
+
+    <form action="{{ url_for('book_flight', flight_id=flight.FlightID) }}" method="POST"
+        class="standard-form booking-form mt-3" id="bookForm" novalidate>
+        <div class="form-group">
+            <label for="passenger_id">Select Passenger <small>(Must be registered)</small></label>
+            <select name="passenger_id" id="passenger_id">
+                <option value="">-- Choose Passenger --</option>
+                {% for p in passengers %}
+                <option value="{{ p.PassengerID }}">{{ p.Name }} ({{ p.PassportNo }})</option>
+                {% endfor %}
+            </select>
+            <span class="field-error" id="err-passenger"></span>
+        </div>
+
+        <div class="form-group">
+            <label for="class_id">Select Class</label>
+            <select name="class_id" id="class_id">
+                <option value="">-- Choose Class --</option>
+                {% for c in classes %}
+                <!-- Calculate total dynamically for display -->
+                <option value="{{ c.ClassID }}">{{ c.ClassType }} (Multiplier: {{ c.PriceMultiplier }}x) - Total: {{
+                    currency_symbol }}{{ "%.2f"|format((flight.BaseFare|float) * (c.PriceMultiplier|float) *
+                    (currency_rate|float)) }}
+                </option>
+                {% endfor %}
+            </select>
+            <span class="field-error" id="err-class"></span>
+            <small class="help-text">Total amount is automatically calculated by database triggers!</small>
+        </div>
+
+        <div class="form-actions mt-3">
+            <button type="submit" class="btn btn-primary btn-large">Confirm Booking Details</button>
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+    {% else %}
+    <p>Flight details could not be loaded.</p>
+    {% endif %}
+</div>
+
+<style>
+    .field-error { color: #e53e3e; font-size: 0.82rem; display: block; margin-top: 3px; }
+</style>
+
+<script>
+    document.getElementById('bookForm').addEventListener('submit', function (e) {
+        let valid = true;
+
+        function showError(id, msg) { document.getElementById(id).textContent = msg; valid = false; }
+        function clearError(id) { document.getElementById(id).textContent = ''; }
+
+        const passenger = document.getElementById('passenger_id').value;
+        if (!passenger) {
+            showError('err-passenger', 'Please select a passenger.');
+        } else {
+            clearError('err-passenger');
+        }
+
+        const cls = document.getElementById('class_id').value;
+        if (!cls) {
+            showError('err-class', 'Please select a class.');
+        } else {
+            clearError('err-class');
+        }
+
+        if (!valid) e.preventDefault();
+    });
+</script>
+{% endblock %}

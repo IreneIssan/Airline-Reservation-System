@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card page-card">
+    <h2><i class="fa-solid fa-user-plus"></i> Register as Passenger</h2>
+    <p>Create a profile to easily book flights.</p>
+    <hr>
+
+    <form action="{{ url_for('register') }}" method="POST" class="standard-form" id="registerForm" novalidate>
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="name">Full Name</label>
+                <input type="text" name="name" id="name" placeholder="John Doe">
+                <span class="field-error" id="err-name"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="gender">Gender</label>
+                <select name="gender" id="gender">
+                    <option value="">Select Gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                </select>
+                <span class="field-error" id="err-gender"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="age">Age</label>
+                <input type="number" name="age" id="age" placeholder="min. 1">
+                <span class="field-error" id="err-age"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="passport">Passport Number</label>
+                <input type="text" name="passport" id="passport" placeholder="A1234567">
+                <span class="field-error" id="err-passport"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input type="text" name="phone" id="phone" placeholder="10-digit number">
+                <span class="field-error" id="err-phone"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="text" name="email" id="email" placeholder="john@example.com">
+                <span class="field-error" id="err-email"></span>
+            </div>
+        </div>
+
+        <div class="form-actions mt-3">
+            <button type="submit" class="btn btn-primary">Register Details</button>
+        </div>
+    </form>
+</div>
+
+<style>
+    .field-error { color: #e53e3e; font-size: 0.82rem; display: block; margin-top: 3px; }
+</style>
+
+<script>
+    document.getElementById('registerForm').addEventListener('submit', function (e) {
+        let valid = true;
+
+        function showError(id, msg) {
+            document.getElementById(id).textContent = msg;
+            valid = false;
+        }
+        function clearError(id) {
+            document.getElementById(id).textContent = '';
+        }
+
+        // Full Name: only letters and spaces
+        const name = document.getElementById('name').value.trim();
+        if (!name) {
+            showError('err-name', 'Full name is required.');
+        } else if (!/^[A-Za-z\s]+$/.test(name)) {
+            showError('err-name', 'Name must contain only alphabets and spaces.');
+        } else {
+            clearError('err-name');
+        }
+
+        // Gender: must select
+        const gender = document.getElementById('gender').value;
+        if (!gender) {
+            showError('err-gender', 'Please select a gender.');
+        } else {
+            clearError('err-gender');
+        }
+
+        // Age: 1–100
+        const age = parseInt(document.getElementById('age').value, 10);
+        if (!document.getElementById('age').value.trim()) {
+            showError('err-age', 'Age is required.');
+        } else if (isNaN(age) || age < 1 || age > 100) {
+            showError('err-age', 'Age must be between 1 and 100.');
+        } else {
+            clearError('err-age');
+        }
+
+        // Passport: alphanumeric, min 6 chars
+        const passport = document.getElementById('passport').value.trim();
+        if (!passport) {
+            showError('err-passport', 'Passport number is required.');
+        } else if (!/^[A-Za-z0-9]{6,}$/.test(passport)) {
+            showError('err-passport', 'Passport must be alphanumeric and at least 6 characters.');
+        } else {
+            clearError('err-passport');
+        }
+
+        // Phone: exactly 10 digits
+        const phone = document.getElementById('phone').value.trim();
+        if (!phone) {
+            showError('err-phone', 'Phone number is required.');
+        } else if (!/^\d{10}$/.test(phone)) {
+            showError('err-phone', 'Phone number must be exactly 10 digits.');
+        } else {
+            clearError('err-phone');
+        }
+
+        // Email: proper format
+        const email = document.getElementById('email').value.trim();
+        if (!email) {
+            showError('err-email', 'Email address is required.');
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            showError('err-email', 'Enter a valid email address (e.g. user@gmail.com).');
+        } else {
+            clearError('err-email');
+        }
+
+        if (!valid) e.preventDefault();
+    });
+</script>
+{% endblock %}

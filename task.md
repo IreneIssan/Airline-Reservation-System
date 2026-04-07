@@ -1,0 +1,16 @@
+-encodedCommand  -inputFormat xml -outputFormat xml
+- [ ] Update style.css
+- [ ] Update base.html
+- [ ] Update auth views
+- [ ] Update register.html
+- [ ] Update search_results.html
+- [ ] Update admin.html
+- [ ] Update book.html
+- [ ] Update summary.html
+- [ ] Update payment.html
+
+- [ ] Update style.css
+- [ ] Update base.html
+- [ ] Update auth / register layouts
+- [ ] Update admin.html screen
+- [ ] Confirm app styles layout with run tests
